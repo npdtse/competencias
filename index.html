@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGC - Auditoria</title>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Container Global -->
+    <div class="app-container">
+        
+        <!-- HEADER -->
+        <header class="top-bar">
+            <div class="brand">
+                <button class="toggle-btn" onclick="app.toggleSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="app-logo">
+                    <i class="fa-solid fa-scale-balanced"></i> Sistema de Gestão por Competências da SAU
+                </div>
+            </div>
+            <div class="toolbar-actions">
+                <button onclick="app.resetApp()" title="Novo (Limpar Tudo)">
+                    <i class="fa-solid fa-file"></i> <span class="hide-mobile">Novo</span>
+                </button>
+                <button onclick="document.getElementById('file-input').click()" title="Abrir JSON">
+                    <i class="fa-solid fa-folder-open"></i> <span class="hide-mobile">Abrir</span>
+                </button>
+                <input type="file" id="file-input" accept=".json" style="display: none;" onchange="app.loadFile(this)">
+                <button onclick="app.saveFile()" id="btn-save">
+                    <i class="fa-solid fa-floppy-disk"></i> <span class="hide-mobile">Salvar</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="menu-group">
+                <span class="menu-label">Cadastros</span>
+                <nav>
+                    <a class="menu-item" onclick="app.navigate('competencias')">
+                        <i class="fa-solid fa-list-check"></i> Competências
+                    </a>
+                    <a class="menu-item" onclick="app.navigate('cargos')">
+                        <i class="fa-solid fa-id-badge"></i> Cargos
+                    </a>
+                    <a class="menu-item" onclick="app.navigate('pessoas')">
+                        <i class="fa-solid fa-users"></i> Pessoas
+                    </a>
+                </nav>
+            </div>
+            <div class="menu-group">
+                <span class="menu-label">Gestão</span>
+                <nav>
+                    <a class="menu-item" onclick="app.navigate('banco-talentos')">
+                        <i class="fa-solid fa-magnifying-glass-chart"></i> Banco de Talentos
+                    </a>
+                    <a class="menu-item" onclick="app.navigate('relatorios')">
+                        <i class="fa-solid fa-chart-pie"></i> Relatórios
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- CONTEÚDO -->
+        <main class="content-area">
+
+            <!-- TELA: COMPETÊNCIAS -->
+            <section id="screen-competencias" class="screen">
+                <div class="screen-header">
+                    <div class="header-left">
+                        <h2>Gestão de Competências</h2>
+                        <p>Biblioteca de conhecimentos, habilidades e atitudes.</p>
+                    </div>
+                    <button class="btn-primary" onclick="app.openModal('modal-competencia')">
+                        <i class="fa-solid fa-plus"></i> Nova Competência
+                    </button>
+                </div>
+                <div class="card">
+                    <div class="table-responsive">
+                        <table id="tabela-competencias">
+                            <thead>
+                                <tr>
+                                    <th width="25%">Nome</th>
+                                    <th width="20%">Categoria</th>
+                                    <th width="20%">Subcategoria</th>
+                                    <th>Descrição (verbo de ação + complemento)</th>
+                                    <th width="150">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TELA: CARGOS -->
+            <section id="screen-cargos" class="screen">
+                <div class="screen-header">
+                    <div class="header-left">
+                        <h2>Gestão de Cargos</h2>
+                        <p>Definição de perfis e mapeamento de exigências.</p>
+                    </div>
+                    <button class="btn-primary" onclick="app.openModal('modal-cargo')">
+                        <i class="fa-solid fa-plus"></i> Novo Cargo
+                    </button>
+                </div>
+                <div class="card">
+                    <div class="table-responsive">
+                        <table id="tabela-cargos">
+                            <thead>
+                                <tr>
+                                    <th>Cargo</th>
+                                    <th>Nível</th>
+                                    <th>Competências Exigidas</th>
+                                    <th width="120">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TELA: PESSOAS -->
+            <section id="screen-pessoas" class="screen">
+                <div class="screen-header">
+                    <div class="header-left">
+                        <h2>Gestão de Pessoas</h2>
+                        <p>Equipe, Avaliações e PDIs.</p>
+                    </div>
+                    <button class="btn-primary" onclick="app.openModal('modal-pessoa')">
+                        <i class="fa-solid fa-plus"></i> Novo Servidor
+                    </button>
+                </div>
+                <div class="card">
+                    <div class="table-responsive">
+                        <table id="tabela-pessoas">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Cargo</th>
+                                    <th>Aderência</th>
+                                    <th width="300">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TELA: AVALIAÇÃO (DETALHE) -->
+            <section id="screen-avaliacao" class="screen">
+                <div class="screen-header">
+                    <div class="header-left">
+                        <button class="btn-back" onclick="window.history.back()">
+                            <i class="fa-solid fa-arrow-left"></i> Voltar
+                        </button>
+                        <h2 style="display:inline; margin-left: 10px;">Avaliação de Competências</h2>
+                    </div>
+                </div>
+                
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <h3 id="aval-nome">...</h3>
+                        <p id="aval-cargo">...</p>
+                        <div class="chart-container">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Formulário de Avaliação</h3>
+                        <p class="text-muted" style="margin-bottom: 15px; font-size: 0.9rem;">
+                            Defina o nível atual de domínio do servidor.
+                        </p>
+                        <form onsubmit="app.saveAvaliacao(event)">
+                            <input type="hidden" id="aval-pessoa-id">
+                            
+                            <div class="scroll-box" style="max-height: 500px; margin-bottom: 15px;">
+                                <!-- Seção: Competências do Cargo -->
+                                <div class="section-divider">
+                                    <i class="fa-solid fa-briefcase"></i> Competências do Cargo
+                                </div>
+                                <table class="table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Competência</th>
+                                            <th width="100">Meta</th>
+                                            <th width="160">Nível Atual</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="aval-tabela-cargo"></tbody>
+                                </table>
+
+                                <!-- Seção: Competências Extras -->
+                                <div class="section-divider">
+                                    <i class="fa-solid fa-star"></i> Competências Adicionais / Outros Talentos
+                                </div>
+                                <table class="table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Competência</th>
+                                            <th width="160">Nível Atual</th>
+                                            <th width="40"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="aval-tabela-extras"></tbody>
+                                </table>
+                                
+                                <div class="add-extra-container">
+                                    <select id="select-new-extra" style="font-size: 0.85rem;">
+                                        <option value="">+ Selecionar competência para adicionar...</option>
+                                    </select>
+                                    <button type="button" class="btn-small btn-action" onclick="app.addExtraCompetencia()">
+                                        Adicionar
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-primary" style="width: 100%;">Salvar Avaliação</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TELA: PDI (DETALHE) -->
+            <section id="screen-pdi" class="screen">
+                <div class="screen-header">
+                    <div class="header-left">
+                        <button class="btn-back" onclick="window.history.back()">
+                            <i class="fa-solid fa-arrow-left"></i> Voltar
+                        </button>
+                        <h2 style="display:inline; margin-left: 10px;">PDI - Plano de Desenvolvimento</h2>
+                    </div>
+                    <button class="btn-primary" onclick="app.openModal('modal-pdi')">
+                        <i class="fa-solid fa-plus"></i> Nova Ação
+                    </button>
+                </div>
+
+                <div class="card" style="margin-bottom: 20px;">
+                    <h3>Diagnóstico de Gaps</h3>
+                    <div id="pdi-gaps-container" class="gaps-grid"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Ações Planejadas</h3>
+                    <div class="table-responsive">
+                        <table id="tabela-pdi">
+                            <thead>
+                                <tr>
+                                    <th>Competência</th>
+                                    <th>Ação</th>
+                                    <th>Tipo</th>
+                                    <th>Prazo</th>
+                                    <th>Status</th>
+                                    <th>Excluir</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TELA: BANCO DE TALENTOS -->
+            <section id="screen-banco-talentos" class="screen">
+                <div class="screen-header">
+                    <h2>Banco de Talentos</h2>
+                </div>
+                <div class="card">
+                    <div class="form-row" style="margin-bottom: 20px; background: #fafafa; padding: 15px; border-radius: 6px;">
+                        <div class="form-group" style="flex: 2; margin-bottom: 0;">
+                            <label>Competência (Busca em todo histórico)</label>
+                            <select id="filtro-competencia" onchange="app.filtrarTalentos()">
+                                <option value="">-- Selecione --</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                            <label>Nível Mínimo</label>
+                            <select id="filtro-nivel" onchange="app.filtrarTalentos()">
+                                <option value="3">Avançado (3)</option>
+                                <option value="2">Intermediário (2)</option>
+                                <option value="1">Básico (1)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="tabela-talentos">
+                            <thead>
+                                <tr>
+                                    <th>Servidor</th>
+                                    <th>Cargo</th>
+                                    <th>Nível</th>
+                                    <th>Origem</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TELA: RELATÓRIOS -->
+            <section id="screen-relatorios" class="screen">
+                <div class="screen-header">
+                    <h2>Dashboard Gerencial</h2>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="card dashboard-card">
+                        <i class="fa-solid fa-users fa-2x" style="color: var(--accent);"></i>
+                        <div class="big-number" id="rel-total-pessoas">0</div>
+                        <p>Total de Servidores</p>
+                    </div>
+                    <div class="card dashboard-card">
+                        <i class="fa-solid fa-bullseye fa-2x" style="color: var(--danger);"></i>
+                        <div class="big-number error-color" id="rel-total-gaps">0</div>
+                        <p>Gaps Identificados</p>
+                    </div>
+                    <div class="card dashboard-card">
+                        <i class="fa-solid fa-graduation-cap fa-2x" style="color: var(--success);"></i>
+                        <div class="big-number" id="rel-total-pdi">0</div>
+                        <p>Ações de Desenvolvimento</p>
+                    </div>
+                    <div class="card dashboard-card">
+                        <i class="fa-solid fa-star fa-2x" style="color: var(--warning);"></i>
+                        <div class="big-number" id="rel-media-aderencia">0%</div>
+                        <p>Aderência Média</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MODAL: COMPETÊNCIA -->
+    <div id="modal-competencia" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Competência</h3>
+                <button class="btn-close" onclick="app.closeModal('modal-competencia')">&times;</button>
+            </div>
+            <form id="form-competencia" onsubmit="app.saveCompetencia(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="comp-id">
+                    <div class="form-group">
+                        <label>Categoria</label>
+                        <select id="comp-categoria" required onchange="app.updateSubcategoriaOptions()">
+                            <option value="">-- Selecione uma categoria --</option>
+                            <option value="Técnicas de auditoria interna (hard skills)">Técnicas de auditoria interna (hard skills)</option>
+                            <option value="Competências profissionais (soft skills)">Competências profissionais (soft skills)</option>
+                            <option value="Processos de negócio das áreas auditadas">Processos de negócio das áreas auditadas</option>
+                            <option value="Governança e Gerenciamento de Riscos">Governança e Gerenciamento de Riscos</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Subcategoria</label>
+                        <select id="comp-subcategoria" required>
+                            <option value="">-- Selecione uma categoria primeiro --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nome</label>
+                        <input type="text" id="comp-nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        <textarea id="comp-desc" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-back" onclick="app.closeModal('modal-competencia')">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: CARGO -->
+    <div id="modal-cargo" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Cargo</h3>
+                <button class="btn-close" onclick="app.closeModal('modal-cargo')">&times;</button>
+            </div>
+            <form id="form-cargo" onsubmit="app.saveCargo(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="cargo-id">
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 2;">
+                            <label>Nome do Cargo</label>
+                            <input type="text" id="cargo-nome" required>
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Nível do Cargo</label>
+                            <select id="cargo-nivel" required>
+                                <option value="Júnior">Júnior</option>
+                                <option value="Pleno">Pleno</option>
+                                <option value="Sênior">Sênior</option>
+                                <option value="Especialista">Especialista</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Níveis Exigidos das Competências</label>
+                        <div class="scroll-box" id="cargo-mapa-container">
+                            <!-- JS Preenche com grid fixa -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-back" onclick="app.closeModal('modal-cargo')">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: PESSOA -->
+    <div id="modal-pessoa" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Servidor</h3>
+                <button class="btn-close" onclick="app.closeModal('modal-pessoa')">&times;</button>
+            </div>
+            <form id="form-pessoa" onsubmit="app.savePessoa(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="pessoa-id">
+                    <div class="form-group">
+                        <label>Nome Completo</label>
+                        <input type="text" id="pessoa-nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label>E-mail</label>
+                        <input type="email" id="pessoa-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Cargo</label>
+                        <select id="pessoa-cargo" required></select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-back" onclick="app.closeModal('modal-pessoa')">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: PDI AÇÃO -->
+    <div id="modal-pdi" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Nova Ação de Desenvolvimento</h3>
+                <button class="btn-close" onclick="app.closeModal('modal-pdi')">&times;</button>
+            </div>
+            <form onsubmit="app.addPdiAction(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="pdi-pessoa-id">
+                    <div class="form-group">
+                        <label>Competência Foco</label>
+                        <select id="pdi-competencia" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Ação</label>
+                        <select id="pdi-tipo" required>
+                            <option value="Educação">Educação (Cursos/Leitura)</option>
+                            <option value="Mentoria">Social/Mentoria</option>
+                            <option value="Prática">Prática/On-the-job</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>O que será feito?</label>
+                        <input type="text" id="pdi-acao" required placeholder="Ex: Curso na ENAP...">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex:1">
+                            <label>Prazo</label>
+                            <input type="date" id="pdi-prazo" required>
+                        </div>
+                        <div class="form-group" style="flex:1">
+                            <label>Status</label>
+                            <select id="pdi-status">
+                                <option value="Não Iniciado">Não Iniciado</option>
+                                <option value="Em Andamento">Em Andamento</option>
+                                <option value="Concluído">Concluído</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-back" onclick="app.closeModal('modal-pdi')">Cancelar</button>
+                    <button type="submit" class="btn-primary">Adicionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toast-area"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
