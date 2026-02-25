@@ -88,9 +88,15 @@
                         <table id="tabela-competencias">
                             <thead>
                                 <tr>
-                                    <th width="25%">Nome</th>
-                                    <th width="20%">Categoria</th>
-                                    <th width="20%">Subcategoria</th>
+                                    <th width="25%" class="sortable" onclick="app.sortCompetencias('nome')">
+                                        Nome <i class="fa-solid fa-sort"></i>
+                                    </th>
+                                    <th width="20%" class="sortable" onclick="app.sortCompetencias('categoria')">
+                                        Categoria <i class="fa-solid fa-sort"></i>
+                                    </th>
+                                    <th width="20%" class="sortable" onclick="app.sortCompetencias('subcategoria')">
+                                        Subcategoria <i class="fa-solid fa-sort"></i>
+                                    </th>
                                     <th>Descrição (verbo de ação + objeto)</th>
                                     <th width="150">Ações</th>
                                 </tr>

@@ -48,6 +48,8 @@ const defaultData = {
 
 let appData = JSON.parse(JSON.stringify(defaultData));
 let currentChart = null; // Instância do Chart.js
+let compSortField = 'nome';
+let compSortDirection = 'asc';
 
 const NIVEIS = { 0: "-", 1: "Básico", 2: "Intermediário", 3: "Avançado", 4: "Especializado" };
 
@@ -219,6 +221,17 @@ const app = {
             subSelect.innerHTML = '<option value="">-- Selecione uma categoria primeiro --</option>';
             subSelect.disabled = true;
         }
+    },
+
+    // Ordenação de Competências
+    sortCompetencias: (field) => {
+        if (compSortField === field) {
+            compSortDirection = compSortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            compSortField = field;
+            compSortDirection = 'asc';
+        }
+        renderCompetenciasList();
     },
 
     saveCompetencia: (e) => {
@@ -680,7 +693,18 @@ function updateAllViews() {
 
 function renderCompetenciasList() {
     const tbody = document.querySelector('#tabela-competencias tbody');
-    tbody.innerHTML = appData.competencias.map(c => `
+    
+    // Cria uma cópia para ordenar sem alterar o array original permanentemente no appData
+    const listaOrdenada = [...appData.competencias].sort((a, b) => {
+        let valA = (a[compSortField] || "").toString().toLowerCase();
+        let valB = (b[compSortField] || "").toString().toLowerCase();
+        
+        if (valA < valB) return compSortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return compSortDirection === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    tbody.innerHTML = listaOrdenada.map(c => `
         <tr>
             <td>${c.nome}</td>
             <td>${c.categoria}</td>
@@ -692,6 +716,17 @@ function renderCompetenciasList() {
             </td>
         </tr>
     `).join('') || '<tr><td colspan="5" class="text-center">Nenhuma competência cadastrada.</td></tr>';
+    
+    // Atualiza ícones visualmente (Opcional, mas melhora a UX)
+    document.querySelectorAll('#tabela-competencias th i').forEach(icon => {
+        icon.className = 'fa-solid fa-sort';
+        icon.style.color = '#ccc';
+    });
+    const activeTh = document.querySelector(`#tabela-competencias th[onclick*="'${compSortField}'"] i`);
+    if (activeTh) {
+        activeTh.className = compSortDirection === 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down';
+        activeTh.style.color = 'var(--accent)';
+    }
 }
 
 function renderCargosList() {

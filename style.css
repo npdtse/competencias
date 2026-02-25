@@ -223,3 +223,18 @@ tr:hover { background-color: #f8f9fa; }
     justify-content: space-between;
     color: var(--secondary);
 }
+
+/* Estilo para colunas ordenáveis */
+th.sortable {
+    cursor: pointer;
+    transition: background 0.2s;
+    user-select: none;
+}
+th.sortable:hover {
+    background-color: #f0f2f5 !important;
+}
+th.sortable i {
+    margin-left: 5px;
+    font-size: 0.8rem;
+    color: #ccc;
+}
